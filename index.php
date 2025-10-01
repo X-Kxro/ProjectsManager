@@ -1,4 +1,753 @@
-<!-- Teste de push -->
-<?php echo "Le push est validé"; ?>
-<?php echo "Le deuxième push est validé"; ?>
+<?php
+// Enhanced Project Manager
+$root = realpath(__DIR__ . '/projects');
+$exclude = ['admin', '.', '..', '.git', 'Projects-Manager'];
+$items = scandir($root);
+$projects = [];
+$totalSize = 0;
+$totalFiles = 0;
+$projectsByType = ['php' => 0, 'nodejs' => 0, 'html' => 0, 'react' => 0, 'vue' => 0, 'general' => 0];
+$recentProjects = 0; // Projets créés dans les 7 derniers jours
+$gitProjects = 0; // Projets avec Git initialisé
+$todayProjects = 0; // Projets créés aujourd'hui
 
+foreach ($items as $name) {
+    if (in_array($name, $exclude, true)) continue;
+    $path = $root . DIRECTORY_SEPARATOR . $name;
+    if (is_dir($path)) {
+        $created = filemtime($path);
+        $size = 0;
+        $fileCount = 0;
+
+        // Calculer la taille et le nombre de fichiers
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($iterator as $file) {
+            if ($file->isFile()) {
+                $size += $file->getSize();
+                $fileCount++;
+            }
+        }
+
+        $totalSize += $size;
+        $totalFiles += $fileCount;
+
+        // Détecter le type de projet de manière plus précise
+        $type = 'general';
+        $isGitProject = false;
+
+        if (file_exists($path . '/package.json')) {
+            $packageContent = @file_get_contents($path . '/package.json');
+            if ($packageContent && strpos($packageContent, 'react') !== false) {
+                $type = 'react';
+            } elseif ($packageContent && strpos($packageContent, 'vue') !== false) {
+                $type = 'vue';
+            } else {
+                $type = 'nodejs';
+            }
+        } elseif (file_exists($path . '/composer.json')) {
+            $type = 'php';
+        } elseif (file_exists($path . '/index.html')) {
+            $type = 'html';
+        } elseif (file_exists($path . '/index.php')) {
+            $type = 'php';
+        }
+
+        // Vérifier si c'est un projet Git (présence de dossier .git ou fichiers Git typiques)
+        if (
+            file_exists($path . '/.git') || file_exists($path . '/README.md') ||
+            file_exists($path . '/.gitignore') || file_exists($path . '/LICENSE')
+        ) {
+            $isGitProject = true;
+            $gitProjects++;
+        }
+
+        $projectsByType[$type]++;
+
+        // Compter les projets récents
+        $daysSinceCreation = (time() - $created) / (24 * 60 * 60);
+        if ($daysSinceCreation <= 7) {
+            $recentProjects++;
+        }
+        if ($daysSinceCreation < 1) {
+            $todayProjects++;
+        }
+
+        $projects[] = [
+            'name' => $name,
+            'created' => date("Y-m-d H:i:s", $created),
+            'timestamp' => $created,
+            'size' => $size,
+            'fileCount' => $fileCount,
+            'type' => $type,
+            'isGit' => $isGitProject,
+            'lastModified' => date("Y-m-d H:i:s", $created)
+        ];
+    }
+}
+
+usort($projects, fn($a, $b) => $b['timestamp'] <=> $a['timestamp']);
+
+// Calculs pour le dashboard
+$totalProjects = count($projects);
+$averageSize = $totalProjects > 0 ? $totalSize / $totalProjects : 0;
+$mostUsedType = array_keys($projectsByType, max($projectsByType))[0] ?? 'general';
+
+function formatBytes($bytes, $precision = 2)
+{
+    $units = array('B', 'KB', 'MB', 'GB', 'TB');
+    for ($i = 0; $bytes > 1024; $i++) {
+        $bytes /= 1024;
+    }
+    return round($bytes, $precision) . ' ' . $units[$i];
+}
+
+function getProjectIcon($type)
+{
+    switch ($type) {
+        case 'nodejs':
+            return '🟢';
+        case 'php':
+            return '🔵';
+        case 'html':
+            return '🟠';
+        case 'react':
+            return '⚛️';
+        case 'vue':
+            return '💚';
+        default:
+            return '📁';
+    }
+}
+?>
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Project Manager Pro</title>
+    
+    <!-- Custom Design System -->
+    <link rel="stylesheet" href="assets/style.css">
+    <!-- Font Awesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="app-background">
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 2rem;">
+            <div class="flex items-center justify-between" style="height: 4rem;">
+                <div class="flex items-center gap-md">
+                    <div style="width: 40px; height: 40px; background: var(--color-primary); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.25rem;">
+                        PM
+                    </div>
+                    <div>
+                        <h1 class="heading-3" style="margin: 0; color: var(--color-primary);">Project Manager</h1>
+                        <p class="text-muted" style="margin: 0; font-size: 0.75rem;">Professional Development Hub</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-md">
+                    <button id="refreshBtn" class="btn btn-secondary">
+                        <i class="fas fa-sync-alt"></i>
+                        Actualiser
+                    </button>
+                    <button id="themeToggle" class="btn btn-secondary" aria-label="Toggle theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="text-muted" style="font-size: 0.875rem;">
+                        <i class="fas fa-clock"></i>
+                        <?= date('H:i:s') ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
+        <!-- Statistics Dashboard -->
+        <section class="stats-grid animate-fade-in-up">
+            <div class="stat-card stat-card--projects">
+                <div class="flex justify-between items-center mb-md">
+                    <div>
+                        <h3 class="text-muted" style="margin: 0; font-size: 0.875rem; font-weight: 500;">Total Projects</h3>
+                        <p style="margin: 0; font-size: 2rem; font-weight: 700; color: var(--color-primary);"><?= $totalProjects ?></p>
+                    </div>
+                    <div style="color: var(--color-primary); font-size: 2rem; opacity: 0.8;">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                </div>
+                <p class="text-muted" style="margin: 0; font-size: 0.75rem;">
+                    <i class="fas fa-arrow-up" style="color: var(--color-success);"></i>
+                    <?= $recentProjects ?> this week
+                </p>
+            </div>
+
+            <div class="stat-card stat-card--size">
+                <div class="flex justify-between items-center mb-md">
+                    <div>
+                        <h3 class="text-muted" style="margin: 0; font-size: 0.875rem; font-weight: 500;">Total Size</h3>
+                        <p style="margin: 0; font-size: 2rem; font-weight: 700; color: var(--color-info);"><?= formatBytes($totalSize) ?></p>
+                    </div>
+                    <div style="color: var(--color-info); font-size: 2rem; opacity: 0.8;">
+                        <i class="fas fa-hdd"></i>
+                    </div>
+                </div>
+                <p class="text-muted" style="margin: 0; font-size: 0.75rem;">
+                    <?= number_format($totalFiles) ?> files
+                </p>
+            </div>
+
+            <div class="stat-card stat-card--git">
+                <div class="flex justify-between items-center mb-md">
+                    <div>
+                        <h3 class="text-muted" style="margin: 0; font-size: 0.875rem; font-weight: 500;">Git Projects</h3>
+                        <p style="margin: 0; font-size: 2rem; font-weight: 700; color: var(--color-success);"><?= $gitProjects ?></p>
+                    </div>
+                    <div style="color: var(--color-success); font-size: 2rem; opacity: 0.8;">
+                        <i class="fab fa-git-alt"></i>
+                    </div>
+                </div>
+                <p class="text-muted" style="margin: 0; font-size: 0.75rem;">
+                    <?= $totalProjects > 0 ? round($gitProjects / $totalProjects * 100) : 0 ?>% of total
+                </p>
+            </div>
+
+            <div class="stat-card stat-card--popular">
+                <div class="flex justify-between items-center mb-md">
+                    <div>
+                        <h3 class="text-muted" style="margin: 0; font-size: 0.875rem; font-weight: 500;">Popular Type</h3>
+                        <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--color-accent); display: flex; align-items: center; gap: 0.5rem;">
+                            <?= getProjectIcon($mostUsedType) ?>
+                            <?= ucfirst($mostUsedType) ?>
+                        </p>
+                    </div>
+                    <div style="color: var(--color-accent); font-size: 2rem; opacity: 0.8;">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                </div>
+                <p class="text-muted" style="margin: 0; font-size: 0.75rem;">
+                    <?= $projectsByType[$mostUsedType] ?> projects
+                </p>
+            </div>
+        </section>
+
+        <!-- Project Actions -->
+        <section class="content-section animate-fade-in-up">
+            <div class="section-header">
+                <h2 class="heading-2" style="margin: 0;">Quick Actions</h2>
+                <p class="text-secondary" style="margin: 0;">Create new projects or manage existing ones</p>
+            </div>
+            <div class="section-content">
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+                    <!-- Create Project -->
+                    <div>
+                        <h3 class="heading-3">Create New Project</h3>
+                        <form id="createForm" action="actions.php" method="post" style="display: grid; grid-template-columns: 1fr auto auto; gap: 1rem; align-items: end;">
+                            <input type="hidden" name="action" value="create">
+                            <div>
+                                <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Project Name</label>
+                                <input name="project" required pattern="[A-Za-z0-9_-]+" 
+                                       class="form-input" 
+                                       placeholder="my-awesome-project" />
+                            </div>
+                            <div>
+                                <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Template</label>
+                                <select name="template" class="form-select">
+                                    <option value="">Basic Project</option>
+                                    <option value="php">PHP Project</option>
+                                    <option value="html">HTML/CSS/JS</option>
+                                    <option value="react">React App</option>
+                                    <option value="vue">Vue.js App</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i>
+                                Create
+                            </button>
+                        </form>
+                        
+                        <!-- GitHub Clone -->
+                        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--color-gray-200);">
+                            <h4 class="text-primary" style="margin: 0 0 1rem 0; font-size: 1.125rem; font-weight: 600;">Clone from GitHub</h4>
+                            <form id="cloneFormMain" action="actions.php" method="post" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: end;">
+                                <input type="hidden" name="action" value="git_clone">
+                                <div>
+                                    <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Repository URL</label>
+                                    <input name="repo" required 
+                                           class="form-input" 
+                                           placeholder="https://github.com/user/repo.git" />
+                                </div>
+                                <div>
+                                    <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Local Name</label>
+                                    <input name="target" required pattern="[A-Za-z0-9_-]+" 
+                                           class="form-input" 
+                                           placeholder="local-project-name" />
+                                </div>
+                                <button type="submit" class="btn btn-accent">
+                                    <i class="fab fa-github"></i>
+                                    Clone
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Search & Filters -->
+                    <div>
+                        <h3 class="heading-3">Search & Filter</h3>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div>
+                                <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Search Projects</label>
+                                <input id="searchInput" 
+                                       class="form-input" 
+                                       placeholder="Search by name..." />
+                            </div>
+                            <div>
+                                <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Filter by Type</label>
+                                <select id="typeFilter" class="form-select">
+                                    <option value="">All Types</option>
+                                    <option value="php">PHP</option>
+                                    <option value="nodejs">Node.js</option>
+                                    <option value="html">HTML</option>
+                                    <option value="react">React</option>
+                                    <option value="vue">Vue.js</option>
+                                    <option value="general">General</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Sort by</label>
+                                <select id="sortBy" class="form-select">
+                                    <option value="date">Date Modified</option>
+                                    <option value="name">Name</option>
+                                    <option value="size">Size</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Grid -->
+        <section class="content-section animate-fade-in-up">
+            <div class="section-header">
+                <div class="flex items-center">
+                    <div>
+                        <h2 class="heading-2" style="margin: 0;">Your Projects</h2>
+                        <p class="text-secondary" style="margin: 0;"><?= count($projects) ?> projects found</p>
+                    </div>
+                    <div class="flex gap-sm justify-end" style="margin-left: auto;">
+                        <button id="viewToggle" class="btn btn-secondary">
+                            <i class="fas fa-th-large"></i>
+                            Grid View
+                        </button>
+                        <a href="/phpmyadmin">
+                            <button class="btn btn-secondary" id="listViewBtn">
+                                <i class="fas fa-database"></i>
+                                Database
+                            </button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="section-content">
+                <?php if (empty($projects)): ?>
+                <!-- Empty State -->
+                <div style="text-align: center; padding: 4rem 2rem;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;">📁</div>
+                    <h3 class="heading-3">No Projects Yet</h3>
+                    <p class="text-secondary" style="margin-bottom: 2rem;">Create your first project to get started with development</p>
+                    <button onclick="document.querySelector('input[name=project]').focus()" 
+                            class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Create Your First Project
+                    </button>
+                </div>
+                <?php else: ?>
+                <!-- Projects Grid -->
+                <div id="projectsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+                    <?php foreach ($projects as $p): ?>
+                    <div class="project-card" 
+                         data-name="<?= strtolower($p['name']) ?>" 
+                         data-type="<?= $p['type'] ?>"
+                         data-date="<?= $p['timestamp'] ?>"
+                         data-size="<?= $p['size'] ?>">
+                        
+                        <div class="flex justify-between items-start mb-lg">
+                            <div class="flex items-center gap-md">
+                                <div style="font-size: 1.5rem;"><?= getProjectIcon($p['type']) ?></div>
+                                <div>
+                                    <h3 class="text-primary" style="margin: 0; font-size: 1.125rem; font-weight: 600;"><?= htmlspecialchars($p['name']) ?></h3>
+                                    <p class="text-muted" style="margin: 0; font-size: 0.875rem;"><?= ucfirst($p['type']) ?> Project</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-sm">
+                                <button class="text-muted" style="border: none; background: none; cursor: pointer; padding: 0.25rem;" 
+                                        title="Star project" aria-label="Star this project">
+                                    <i class="far fa-star"></i>
+                                </button>
+                                <button class="settingsBtn text-muted" style="border: none; background: none; cursor: pointer; padding: 0.25rem;" 
+                                        data-name="<?= htmlspecialchars($p['name']) ?>" 
+                                        title="Project settings" 
+                                        aria-label="Open project settings">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 1.5rem;">
+                            <div class="flex justify-between mb-sm">
+                                <span class="text-secondary" style="font-size: 0.875rem;">Files:</span>
+                                <span class="text-primary" style="font-size: 0.875rem; font-weight: 500;"><?= $p['fileCount'] ?></span>
+                            </div>
+                            <div class="flex justify-between mb-sm">
+                                <span class="text-secondary" style="font-size: 0.875rem;">Size:</span>
+                                <span class="text-primary" style="font-size: 0.875rem; font-weight: 500;"><?= formatBytes($p['size']) ?></span>
+                            </div>
+                            <div class="flex justify-between mb-sm">
+                                <span class="text-secondary" style="font-size: 0.875rem;">Modified:</span>
+                                <span class="text-primary" style="font-size: 0.875rem; font-weight: 500;"><?= date('M j, Y', $p['timestamp']) ?></span>
+                            </div>
+                            
+                            <!-- Progress indicator based on size -->
+                            <div style="margin-top: 1rem;">
+                                <div style="background: var(--color-gray-200); height: 4px; border-radius: 2px; overflow: hidden;">
+                                    <div style="background: linear-gradient(90deg, var(--color-primary), var(--color-accent)); height: 100%; width: <?= min(100, ($p['size'] / max($totalSize/count($projects), 1)) * 100) ?>%; transition: width 0.3s ease;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-sm">
+                            <a href="/projects/<?= htmlspecialchars($p['name']) ?>/" 
+                               target="_blank"
+                               class="btn btn-primary" style="flex: 1; text-decoration: none; justify-content: center;">
+                                <i class="fas fa-external-link-alt"></i>
+                                Open
+                            </a>
+                            <button class="btn btn-secondary delBtn" 
+                                    data-name="<?= htmlspecialchars($p['name']) ?>"
+                                    title="Delete project"
+                                    aria-label="Delete project <?= htmlspecialchars($p['name']) ?>">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                
+                <!-- Projects List View -->
+                <div id="projectsList" class="hidden" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <?php foreach ($projects as $p): ?>
+                    <div class="project-row" 
+                         data-name="<?= strtolower($p['name']) ?>" 
+                         data-type="<?= $p['type'] ?>"
+                         data-date="<?= $p['timestamp'] ?>"
+                         data-size="<?= $p['size'] ?>"
+                         style="background: white; border: 1px solid var(--color-gray-200); border-radius: var(--radius-lg); padding: var(--space-lg); display: flex; align-items: center; justify-content: space-between; transition: all var(--transition-fast);">
+                        
+                        <div class="flex items-center gap-lg" style="flex: 1;">
+                            <div style="font-size: 1.5rem;"><?= getProjectIcon($p['type']) ?></div>
+                            <div style="flex: 1;">
+                                <h3 class="text-primary" style="margin: 0; font-size: 1.125rem; font-weight: 600;"><?= htmlspecialchars($p['name']) ?></h3>
+                                <p class="text-muted" style="margin: 0; font-size: 0.875rem;"><?= ucfirst($p['type']) ?> Project • <?= $p['fileCount'] ?> files • <?= formatBytes($p['size']) ?></p>
+                            </div>
+                            <div class="text-secondary" style="font-size: 0.875rem; min-width: 120px; text-align: right;">
+                                <?= date('M j, Y', $p['timestamp']) ?>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-sm" style="margin-left: var(--space-lg);">
+                            <a href="/projects/<?= htmlspecialchars($p['name']) ?>/" 
+                               target="_blank"
+                               class="btn btn-primary btn-sm" style="text-decoration: none;">
+                                <i class="fas fa-external-link-alt"></i>
+                                Open
+                            </a>
+                            <button class="settingsBtn btn btn-secondary btn-sm" 
+                                    data-name="<?= htmlspecialchars($p['name']) ?>" 
+                                    title="Project settings" 
+                                    aria-label="Open project settings">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                            <button class="btn btn-secondary btn-sm delBtn" 
+                                    data-name="<?= htmlspecialchars($p['name']) ?>"
+                                    title="Delete project"
+                                    aria-label="Delete project <?= htmlspecialchars($p['name']) ?>">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php endif; ?>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Footer -->
+    <footer style="background: var(--color-gray-50); border-top: 1px solid var(--color-gray-200); margin-top: var(--space-3xl); padding: var(--space-2xl) 0;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 var(--space-xl);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-2xl); margin-bottom: var(--space-xl);">
+                <!-- Colonne 1: Info principale -->
+                <div>
+                    <h3 style="color: var(--color-primary); font-size: 1.25rem; font-weight: 600; margin: 0 0 var(--space-md) 0;">
+                        <i class="fas fa-code" style="margin-right: 0.5rem;"></i>
+                        Project Manager
+                    </h3>
+                    <p style="color: var(--color-gray-600); margin: 0 0 var(--space-md) 0; line-height: 1.6;">
+                        Gestionnaire de projets professionnel pour développeurs. 
+                        Organisez, gérez et déployez vos projets en toute simplicité.
+                    </p>
+                    <div style="display: flex; gap: var(--space-sm);">
+                        <a href="#" style="color: var(--color-primary); font-size: 1.25rem; text-decoration: none; transition: color var(--transition-fast);" 
+                           onmouseover="this.style.color='var(--color-accent)'" 
+                           onmouseout="this.style.color='var(--color-primary)'">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="#" style="color: var(--color-primary); font-size: 1.25rem; text-decoration: none; transition: color var(--transition-fast);" 
+                           onmouseover="this.style.color='var(--color-accent)'" 
+                           onmouseout="this.style.color='var(--color-primary)'">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" style="color: var(--color-primary); font-size: 1.25rem; text-decoration: none; transition: color var(--transition-fast);" 
+                           onmouseover="this.style.color='var(--color-accent)'" 
+                           onmouseout="this.style.color='var(--color-primary)'">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Colonne 2: Liens rapides -->
+                <div>
+                    <h4 style="color: var(--color-gray-800); font-size: 1rem; font-weight: 600; margin: 0 0 var(--space-md) 0;">
+                        Liens rapides
+                    </h4>
+                    <ul style="list-style: none; margin: 0; padding: 0;">
+                        <li style="margin-bottom: var(--space-sm);">
+                            <a href="#" style="color: var(--color-gray-600); text-decoration: none; transition: color var(--transition-fast);" 
+                               onmouseover="this.style.color='var(--color-primary)'" 
+                               onmouseout="this.style.color='var(--color-gray-600)'">
+                                <i class="fas fa-folder" style="margin-right: 0.5rem; width: 16px;"></i>
+                                Mes projets
+                            </a>
+                        </li>
+                        <li style="margin-bottom: var(--space-sm);">
+                            <a href="#" style="color: var(--color-gray-600); text-decoration: none; transition: color var(--transition-fast);" 
+                               onmouseover="this.style.color='var(--color-primary)'" 
+                               onmouseout="this.style.color='var(--color-gray-600)'">
+                                <i class="fas fa-plus" style="margin-right: 0.5rem; width: 16px;"></i>
+                                Nouveau projet
+                            </a>
+                        </li>
+                        <li style="margin-bottom: var(--space-sm);">
+                            <a href="#" style="color: var(--color-gray-600); text-decoration: none; transition: color var(--transition-fast);" 
+                               onmouseover="this.style.color='var(--color-primary)'" 
+                               onmouseout="this.style.color='var(--color-gray-600)'">
+                                <i class="fas fa-cog" style="margin-right: 0.5rem; width: 16px;"></i>
+                                Paramètres
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Colonne 3: Technologies -->
+                <div>
+                    <h4 style="color: var(--color-gray-800); font-size: 1rem; font-weight: 600; margin: 0 0 var(--space-md) 0;">
+                        Technologies supportées
+                    </h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm);">
+                        <span style="background: var(--color-primary); color: white; padding: 0.25rem 0.75rem; border-radius: var(--radius-md); font-size: 0.75rem; font-weight: 500;">PHP</span>
+                        <span style="background: var(--color-accent); color: white; padding: 0.25rem 0.75rem; border-radius: var(--radius-md); font-size: 0.75rem; font-weight: 500;">Node.js</span>
+                        <span style="background: var(--color-info); color: white; padding: 0.25rem 0.75rem; border-radius: var(--radius-md); font-size: 0.75rem; font-weight: 500;">React</span>
+                        <span style="background: var(--color-success); color: white; padding: 0.25rem 0.75rem; border-radius: var(--radius-md); font-size: 0.75rem; font-weight: 500;">Vue.js</span>
+                        <span style="background: var(--color-gray-600); color: white; padding: 0.25rem 0.75rem; border-radius: var(--radius-md); font-size: 0.75rem; font-weight: 500;">HTML/CSS</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Barre de copyright -->
+            <div style="border-top: 1px solid var(--color-gray-200); padding-top: var(--space-lg); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-md);">
+                <p style="color: var(--color-gray-500); margin: 0; font-size: 0.875rem;">
+                    © 2025 Project Manager. Tous droits réservés.
+                </p>
+                <div style="display: flex; gap: var(--space-lg);">
+                    <a href="#" style="color: var(--color-gray-500); text-decoration: none; font-size: 0.875rem; transition: color var(--transition-fast);" 
+                       onmouseover="this.style.color='var(--color-primary)'" 
+                       onmouseout="this.style.color='var(--color-gray-500)'">
+                        Politique de confidentialité
+                    </a>
+                    <a href="#" style="color: var(--color-gray-500); text-decoration: none; font-size: 0.875rem; transition: color var(--transition-fast);" 
+                       onmouseover="this.style.color='var(--color-primary)'" 
+                       onmouseout="this.style.color='var(--color-gray-500)'">
+                        Conditions d'utilisation
+                    </a>
+                    <a href="#" style="color: var(--color-gray-500); text-decoration: none; font-size: 0.875rem; transition: color var(--transition-fast);" 
+                       onmouseover="this.style.color='var(--color-primary)'" 
+                       onmouseout="this.style.color='var(--color-gray-500)'">
+                        Contact
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Project Settings Modal -->
+    <div id="settingsModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; align-items: center; justify-content: center;" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+        <div id="modalBackdrop" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);" aria-hidden="true"></div>
+        <div style="position: relative; background: white; border-radius: var(--radius-xl); padding: var(--space-xl); box-shadow: var(--shadow-xl); max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;" role="document">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--color-gray-200);">
+                <h3 id="modalTitle" style="margin: 0; font-size: 1.5rem; font-weight: 600; color: var(--color-primary);">Paramètres du projet</h3>
+                <button id="modalCancel" style="background: none; border: none; color: var(--color-gray-400); font-size: 1.5rem; cursor: pointer; padding: 0.5rem; border-radius: var(--radius-md); transition: all 0.2s;" 
+                        onmouseover="this.style.background='var(--color-gray-100)'; this.style.color='var(--color-gray-600)'" 
+                        onmouseout="this.style.background='none'; this.style.color='var(--color-gray-400)'"
+                        aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div style="margin-bottom: 2rem;">
+                <!-- Rename Section -->
+                <div style="margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-gray-200);">
+                    <h4 style="margin: 0 0 1rem 0; font-size: 1.125rem; font-weight: 600; color: var(--color-primary); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-edit" style="color: var(--color-primary);"></i>
+                        Renommer le projet
+                    </h4>
+                    <form id="renameForm" method="post" action="actions.php" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <input type="hidden" name="action" value="rename">
+                        <input type="hidden" name="original" id="originalName" value="">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--color-gray-600); font-weight: 500;">Nouveau nom du projet</label>
+                            <input name="newName" id="newName" required pattern="[A-Za-z0-9_-]+" 
+                                   style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: 1rem; transition: border-color 0.2s;"
+                                   placeholder="nouveau-nom-projet">
+                        </div>
+                        <button type="submit" 
+                                style="background: var(--color-primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 1rem;"
+                                onmouseover="this.style.background='var(--color-primary-dark)'; this.style.transform='translateY(-1px)'"
+                                onmouseout="this.style.background='var(--color-primary)'; this.style.transform='translateY(0)'">
+                            <i class="fas fa-save"></i>
+                            Renommer
+                        </button>
+                    </form>
+                </div>
+
+                <!-- GitHub Publish Section -->
+                <div style="margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-gray-200);">
+                    <h4 style="margin: 0 0 1rem 0; font-size: 1.125rem; font-weight: 600; color: var(--color-primary); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fab fa-github" style="color: var(--color-primary);"></i>
+                        Publier sur GitHub
+                    </h4>
+                    <form id="pushForm" method="post" action="actions.php" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <input type="hidden" name="action" value="git_push">
+                        <input type="hidden" name="project" id="pushProjectName">
+                        
+                        <div style="background: var(--color-gray-50); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--color-info);">
+                            <p style="margin: 0; font-size: 0.875rem; color: var(--color-gray-600);">
+                                <i class="fas fa-info-circle" style="color: var(--color-info);"></i>
+                                Cela va initialiser Git, créer un dépôt GitHub et pousser votre code.
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--color-gray-600); font-weight: 500;">GitHub Token</label>
+                            <input name="github_token" type="password" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: 1rem;" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+                            <p style="margin: 0.5rem 0 0 0; font-size: 0.75rem; color: var(--color-gray-500);">
+                                <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--color-primary);">Créer un token</a> avec les permissions "repo"
+                            </p>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--color-gray-600); font-weight: 500;">GitHub Username</label>
+                                <input name="github_username" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: 1rem;" placeholder="your-username">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--color-gray-600); font-weight: 500;">Repository Name</label>
+                                <input name="repo_name" id="repoName" required pattern="[A-Za-z0-9_.-]+" style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: 1rem;" placeholder="repository-name">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--color-gray-600); font-weight: 500;">Description (optionnelle)</label>
+                            <textarea name="description" rows="2" style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: 1rem; resize: vertical; font-family: inherit;" placeholder="Description du projet"></textarea>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" name="private" id="privateRepo" style="margin: 0;">
+                            <label for="privateRepo" style="font-size: 0.875rem; color: var(--color-gray-600);">Dépôt privé</label>
+                        </div>
+                        
+                        <button type="submit" 
+                                style="background: var(--color-accent); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 1rem;"
+                                onmouseover="this.style.background='var(--color-accent-dark)'; this.style.transform='translateY(-1px)'"
+                                onmouseout="this.style.background='var(--color-accent)'; this.style.transform='translateY(0)'">
+                            <i class="fab fa-github"></i>
+                            Publier
+                        </button>
+                    </form>
+                </div>
+                <!-- Project Info Section -->
+                <div>
+                    <h4 style="margin: 0 0 1rem 0; font-size: 1.125rem; font-weight: 600; color: var(--color-primary); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-info-circle" style="color: var(--color-info);"></i>
+                        Informations du projet
+                    </h4>
+                    <div style="display: grid; gap: 0.75rem; font-size: 0.875rem;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--color-gray-600);">Nom du projet:</span>
+                            <span style="color: var(--color-primary); font-weight: 500;" id="projectInfoName">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--color-gray-600);">Type:</span>
+                            <span style="color: var(--color-primary); font-weight: 500;" id="projectInfoType">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--color-gray-600);">Chemin:</span>
+                            <span style="color: var(--color-gray-500); font-family: monospace; font-size: 0.75rem;" id="projectInfoPath">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--color-gray-600);">Dernière modification:</span>
+                            <span style="color: var(--color-primary); font-weight: 500;" id="projectInfoDate">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div style="padding: 1.5rem 0; border-top: 1px solid var(--color-gray-200); display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 2rem;">
+                <button type="button" id="modalClose"
+                        style="background: var(--color-gray-200); color: var(--color-gray-700); border: none; padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem;"
+                        onmouseover="this.style.background='var(--color-gray-300)'; this.style.transform='translateY(-1px)'"
+                        onmouseout="this.style.background='var(--color-gray-200)'; this.style.transform='translateY(0)'">
+                    <i class="fas fa-times"></i>
+                    Fermer
+                </button>
+                <button type="button" id="deleteProjectBtn" 
+                        style="background: var(--color-error); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem;"
+                        onmouseover="this.style.background='#b91c1c'; this.style.transform='translateY(-1px)'"
+                        onmouseout="this.style.background='var(--color-error)'; this.style.transform='translateY(0)'">
+                    <i class="fas fa-trash"></i>
+                    Supprimer
+                </button>
+                <button type="button" id="openProjectBtn" 
+                        style="background: var(--color-primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem;"
+                        onmouseover="this.style.background='var(--color-primary-dark)'; this.style.transform='translateY(-1px)'"
+                        onmouseout="this.style.background='var(--color-primary)'; this.style.transform='translateY(0)'">
+                    <i class="fas fa-external-link-alt"></i>
+                    Ouvrir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Container -->
+    <div id="notifications"></div>
+
+    <!-- JavaScript -->
+    <script src="assets/index.js"></script>
+</body>
+</html>

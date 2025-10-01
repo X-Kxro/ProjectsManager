@@ -1,0 +1,701 @@
+/* Project Manager - Unique Design System */
+
+/* Reset and base styles */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+    overflow-x: hidden;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Design System - Professional & Unique */
+:root {
+    /* Primary palette - Deep ocean blues with warm accents */
+    --color-primary: #1a365d;
+    --color-primary-light: #2d5a87;
+    --color-primary-dark: #0f1f2e;
+    
+    /* Secondary palette - Warm copper accents */
+    --color-accent: #d69e2e;
+    --color-accent-light: #f6e05e;
+    --color-accent-dark: #b7791f;
+    
+    /* Neutral palette - Sophisticated grays */
+    --color-gray-50: #f8fafc;
+    --color-gray-100: #f1f5f9;
+    --color-gray-200: #e2e8f0;
+    --color-gray-300: #cbd5e1;
+    --color-gray-400: #94a3b8;
+    --color-gray-500: #64748b;
+    --color-gray-600: #475569;
+    --color-gray-700: #334155;
+    --color-gray-800: #1e293b;
+    --color-gray-900: #0f172a;
+    
+    /* Semantic colors */
+    --color-success: #059669;
+    --color-warning: #d69e2e;
+    --color-error: #dc2626;
+    --color-info: #0ea5e9;
+    
+    /* Typography */
+    --text-primary: var(--color-gray-900);
+    --text-secondary: var(--color-gray-600);
+    --text-muted: var(--color-gray-500);
+    --text-inverse: var(--color-gray-50);
+    
+    /* Spacing system */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    --space-3xl: 4rem;
+    
+    /* Border radius */
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    
+    /* Transitions */
+    --transition-fast: 150ms ease;
+    --transition-normal: 250ms ease;
+    --transition-slow: 350ms ease;
+}
+
+/* Main background - Subtle geometric pattern */
+.app-background {
+    background:
+        radial-gradient(circle at 25% 25%, var(--color-gray-50) 0%, transparent 25%),
+        radial-gradient(circle at 75% 75%, var(--color-gray-100) 0%, transparent 25%),
+        linear-gradient(135deg, var(--color-gray-50) 0%, #ffffff 50%, var(--color-gray-50) 100%);
+    min-height: 100vh;
+    position: relative;
+}
+
+.app-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        linear-gradient(90deg, rgba(26, 54, 93, 0.03) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(26, 54, 93, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+}
+/* Card system - Unique elevated design */
+.project-card, .project-row {
+    background: #ffffff;
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-normal);
+}
+
+.project-card::before, .project-row::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+}
+
+.project-card:hover, .project-row:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--color-primary-light);
+}
+
+.project-card:hover::before, .project-row:hover::before {
+    opacity: 1;
+}
+
+/* Navigation - Clean and professional */
+.nav-container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--color-gray-200);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+/* Stats cards - Unique design with data visualization feel */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-lg);
+    margin-bottom: var(--space-2xl);
+}
+
+.stat-card {
+    background: #ffffff;
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+    border-left: 4px solid;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 60px;
+    height: 60px;
+    opacity: 0.1;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.stat-card--projects {
+    border-left-color: var(--color-primary);
+}
+
+.stat-card--size {
+    border-left-color: var(--color-info);
+}
+
+.stat-card--git {
+    border-left-color: var(--color-success);
+}
+
+.stat-card--popular {
+    border-left-color: var(--color-accent);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Content sections */
+.content-section {
+    background: #ffffff;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-gray-200);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    margin-bottom: var(--space-xl);
+}
+
+.section-header {
+    padding: var(--space-xl);
+    border-bottom: 1px solid var(--color-gray-200);
+    background: var(--color-gray-50);
+}
+
+.section-content {
+    padding: var(--space-xl);
+}
+
+/* Forms - Modern and clean */
+.form-group {
+    margin-bottom: var(--space-lg);
+}
+
+.form-input, .form-select {
+    width: 100%;
+    padding: var(--space-md) var(--space-lg);
+    border: 2px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    background: #ffffff;
+    transition: all var(--transition-fast);
+}
+
+.form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
+}
+
+.form-input::placeholder {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* Buttons - Distinctive and professional */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-sm {
+    padding: var(--space-sm) var(--space-md);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: var(--text-inverse);
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-accent {
+    background: var(--color-accent);
+    color: var(--color-gray-900);
+}
+
+.btn-accent:hover {
+    background: var(--color-accent-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background: var(--color-gray-100);
+    color: var(--text-primary);
+    border: 1px solid var(--color-gray-300);
+}
+
+.btn-secondary:hover {
+    background: var(--color-gray-200);
+    border-color: var(--color-gray-400);
+}
+
+/* Typography */
+.heading-1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-primary);
+    margin-bottom: var(--space-lg);
+}
+
+.heading-2 {
+    font-size: 1.875rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+}
+
+.heading-3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+}
+
+.text-primary {
+    color: var(--text-primary);
+}
+
+.text-secondary {
+    color: var(--text-secondary);
+}
+
+.text-muted {
+    color: var(--text-muted);
+}
+
+/* Utility classes */
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.gap-sm {
+    gap: var(--space-sm);
+}
+
+.gap-md {
+    gap: var(--space-md);
+}
+
+.gap-lg {
+    gap: var(--space-lg);
+}
+
+.mb-sm {
+    margin-bottom: var(--space-sm);
+}
+
+.mb-md {
+    margin-bottom: var(--space-md);
+}
+
+.mb-lg {
+    margin-bottom: var(--space-lg);
+}
+
+.mb-xl {
+    margin-bottom: var(--space-xl);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-gray-100);
+    border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-gray-400);
+    border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-gray-500);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Focus styles for accessibility */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Dark theme support for future */
+/* Responsive design */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--space-lg);
+    }
+    
+    .content-section .section-content > div {
+        grid-template-columns: 1fr !important;
+        gap: var(--space-xl);
+    }
+    
+    #projectsGrid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .nav-container .flex {
+        flex-direction: column;
+        gap: var(--space-md);
+        text-align: center;
+    }
+    
+    .modal-overlay > div[role="document"] {
+        width: 95% !important;
+        margin: var(--space-md);
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-header .flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: var(--space-md);
+    }
+    
+    .form-input, .form-select {
+        padding: var(--space-sm) var(--space-md);
+    }
+}
+
+/* Dark mode manual toggle */
+body.dark-mode {
+    --text-primary: var(--color-gray-100);
+    --text-secondary: var(--color-gray-400);
+    --text-muted: var(--color-gray-500);
+    --text-inverse: var(--color-gray-900);
+    --color-primary: var(--color-primary-light);
+}
+
+body.app-background.dark-mode {
+    /* Preserve the decorative pattern but with dark tones for a true dark theme */
+    background: 
+        radial-gradient(circle at 25% 25%, rgba(30,41,59,0.65) 0%, transparent 25%),
+        radial-gradient(circle at 75% 75%, rgba(30,41,59,0.6) 0%, transparent 25%),
+        linear-gradient(135deg, var(--color-gray-900) 0%, var(--color-gray-800) 50%, var(--color-gray-900) 100%) !important;
+    min-height: 100vh;
+    position: relative;
+}
+
+body.app-background.dark-mode::before {
+    /* Lighter grid lines on dark background, subtle */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+}
+
+body.dark-mode .app-background {
+    /* Ensure a solid dark base color behind the decorative gradients */
+    background-color: var(--color-gray-900) !important;
+}
+
+body.dark-mode .project-card,
+body.dark-mode .content-section {
+    background: var(--color-gray-800);
+    border-color: var(--color-gray-700);
+}
+
+/* Dark-mode: List view specific styles */
+body.dark-mode #projectsList,
+body.dark-mode .project-row {
+    background: var(--color-gray-800) !important;
+    border: 1px solid var(--color-gray-700) !important;
+    color: var(--text-primary) !important;
+    box-shadow: none;
+}
+
+body.dark-mode .project-row .text-primary,
+body.dark-mode .project-row .text-secondary,
+body.dark-mode .project-row .text-muted {
+    color: var(--text-primary) !important;
+}
+
+body.dark-mode .project-row a.btn,
+body.dark-mode .project-row .btn {
+    background: var(--color-primary) !important;
+    color: var(--text-inverse) !important;
+}
+
+/* small outline buttons inside list rows */
+body.dark-mode .project-row .btn-secondary,
+body.dark-mode .project-row button.btn-secondary {
+    background: var(--color-gray-700) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--color-gray-600) !important;
+}
+
+
+body.dark-mode .nav-container {
+    background: rgba(30, 41, 59, 0.95);
+    border-bottom-color: var(--color-gray-700);
+}
+/* Dark-mode overrides for additional components */
+body.dark-mode .stat-card,
+body.dark-mode .stat-card--projects,
+body.dark-mode .stat-card--size,
+body.dark-mode .stat-card--git,
+body.dark-mode .stat-card--popular {
+    background: var(--color-gray-800);
+    border-color: var(--color-gray-700);
+    color: var(--text-primary);
+}
+body.dark-mode .stat-card h3,
+body.dark-mode .stat-card p,
+body.dark-mode .stat-card .text-muted {
+    color: var(--text-secondary) !important;
+}
+body.dark-mode .stats-grid {
+    background: transparent;
+}
+body.dark-mode input.form-input,
+body.dark-mode select.form-select {
+    background: var(--color-gray-700);
+    color: var(--text-primary);
+    border: 1px solid var(--color-gray-600);
+}
+body.dark-mode .section-header {
+    background: var(--color-gray-700) !important;
+    border-color: var(--color-gray-600) !important;
+}
+body.dark-mode .section-header h2,
+body.dark-mode .section-header h3 {
+    color: var(--text-primary);
+}
+
+/* Dark-mode footer, modal, buttons, and additional elements */
+body.dark-mode footer {
+    background: var(--color-gray-800) !important;
+    border-color: var(--color-gray-700) !important;
+}
+body.dark-mode footer h3,
+body.dark-mode footer h4 {
+    color: var(--text-primary) !important;
+}
+body.dark-mode footer p,
+body.dark-mode footer a,
+body.dark-mode footer li a {
+    color: var(--text-secondary) !important;
+}
+body.dark-mode footer a:hover,
+body.dark-mode footer li a:hover {
+    color: var(--color-primary) !important;
+}
+body.dark-mode .modal-overlay > div[role="document"] {
+    background: var(--color-gray-800) !important;
+    color: var(--text-primary);
+}
+body.dark-mode .modal-overlay h3,
+body.dark-mode .modal-overlay h4 {
+    color: var(--text-primary) !important;
+}
+body.dark-mode .modal-overlay label {
+    color: var(--text-secondary) !important;
+}
+body.dark-mode .btn-secondary {
+    background: var(--color-gray-700) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--color-gray-600) !important;
+}
+body.dark-mode .btn-secondary:hover {
+    background: var(--color-gray-600) !important;
+}
+body.dark-mode .text-secondary {
+    color: var(--text-secondary) !important;
+}
+body.dark-mode .text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* Modal overlay styles */
+body.modal-open {
+    overflow: hidden;
+}
+
+body.modal-open > :not(.modal-overlay) {
+    filter: blur(4px) brightness(0.7);
+    pointer-events: none;
+    user-select: none;
+    transition: filter var(--transition-fast);
+}
+
+/* Notifications */
+#notifications {
+    position: fixed;
+    top: var(--space-lg);
+    right: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    z-index: 60;
+}
+.notification {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    color: var(--text-inverse);
+    transform: translateX(100%);
+    opacity: 0;
+    transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+.notification-show {
+    transform: translateX(0);
+    opacity: 1;
+}
+.notification-success { background: var(--color-success); }
+.notification-error { background: var(--color-error); }
+.notification-warning { background: var(--color-warning); }
+.notification-info { background: var(--color-info); }
+.notification-close {
+    margin-left: var(--space-md);
+    background: none;
+    border: none;
+    color: var(--text-inverse);
+    cursor: pointer;
+    font-size: 1rem;
+}
