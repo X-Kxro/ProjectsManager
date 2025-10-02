@@ -103,7 +103,7 @@ body {
     background-size: 20px 20px;
     pointer-events: none;
 }
-/* Card system - Unique elevated design */
+
 .project-card, .project-row {
     background: #ffffff;
     border: 1px solid var(--color-gray-200);

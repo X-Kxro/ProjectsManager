@@ -338,7 +338,7 @@ function getProjectIcon($type)
             <div class="section-header">
                 <div class="flex items-center">
                     <div>
-                        <h2 class="heading-2" style="margin: 0;">Your Projects</h2>
+                        <h2 class="heading-2" style="margin: 0;">Mes projets</h2>
                         <p class="text-secondary" style="margin: 0;"><?= count($projects) ?> projects found</p>
                     </div>
                     <div class="flex gap-sm justify-end" style="margin-left: auto;">
@@ -633,6 +633,34 @@ function getProjectIcon($type)
                             Renommer
                         </button>
                     </form>
+                </div>
+
+                <!-- Versioning Section -->
+                <div style="margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-gray-200);">
+                    <h4 style="margin: 0 0 1rem 0; font-size: 1.125rem; font-weight: 600; color: var(--color-primary); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-history" style="color: var(--color-success);"></i>
+                        Gestion des versions
+                    </h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <button type="button" id="createVersionBtn"
+                                style="background: var(--color-success); color: white; border: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.875rem;"
+                                onmouseover="this.style.background='#059669'; this.style.transform='translateY(-1px)'"
+                                onmouseout="this.style.background='var(--color-success)'; this.style.transform='translateY(0)'">
+                            <i class="fas fa-save"></i>
+                            Créer une version
+                        </button>
+                        <button type="button" id="viewVersionsBtn"
+                                style="background: var(--color-info); color: white; border: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.875rem;"
+                                onmouseover="this.style.background='#0284c7'; this.style.transform='translateY(-1px)'"
+                                onmouseout="this.style.background='var(--color-info)'; this.style.transform='translateY(0)'">
+                            <i class="fas fa-list"></i>
+                            Voir l'historique
+                        </button>
+                    </div>
+                    <div id="versionStatus" style="margin-top: 1rem; padding: 0.75rem; background: var(--color-gray-50); border-radius: var(--radius-md); font-size: 0.875rem; color: var(--color-gray-600); display: none;">
+                        <i class="fas fa-info-circle"></i>
+                        <span id="versionStatusText">Prêt à créer une version</span>
+                    </div>
                 </div>
 
                 <!-- Project Info Section -->

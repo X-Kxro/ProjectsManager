@@ -329,6 +329,10 @@ class ProjectManager {
             this.showNotification(`Le projet "${params.get('project')}" a été renommé !`, 'success');
         } else if (params.get('success') === 'cloned') {
             this.showNotification(`Le projet "${params.get('project')}" a été cloné depuis GitHub !`, 'success');
+        } else if (params.get('success') === 'versioned') {
+            this.showNotification(`Version créée pour "${params.get('project')}" : ${params.get('archive')}`, 'success');
+        } else if (params.get('success') === 'restored') {
+            this.showNotification(`Projet "${params.get('project')}" restauré depuis ${params.get('archive')}`, 'success');
         } else if (params.get('error')) {
             const error = params.get('error');
             let message = 'Une erreur est survenue';
@@ -379,6 +383,21 @@ class ProjectManager {
                     break;
                 case 'project_not_found':
                     message = 'Projet non trouvé';
+                    break;
+                case 'backup_failed':
+                    message = 'Échec de la création de la version';
+                    break;
+                case 'archive_not_found':
+                    message = 'Archive de version introuvable';
+                    break;
+                case 'corrupted_archive':
+                    message = 'Archive corrompue - intégrité compromise';
+                    break;
+                case 'extraction_failed':
+                    message = 'Échec de l\'extraction de l\'archive';
+                    break;
+                case 'missing_project':
+                    message = 'Nom de projet manquant';
                     break;
             }
             
@@ -484,6 +503,28 @@ class ProjectManager {
         document.getElementById('projectInfoDate').textContent = date.toLocaleDateString('fr-FR');
     }
 
+    createVersion(projectName) {
+        // Afficher un état de chargement
+        const statusDiv = document.getElementById('versionStatus');
+        const statusText = document.getElementById('versionStatusText');
+        
+        if (statusDiv && statusText) {
+            statusDiv.style.display = 'block';
+            statusText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création de la version en cours...';
+        }
+        
+        // Créer et soumettre le formulaire
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'actions.php';
+        form.innerHTML = `
+            <input type="hidden" name="action" value="versioning">
+            <input type="hidden" name="project" value="${projectName}">
+        `;
+        document.body.appendChild(form);
+        form.submit();
+    }
+
     initAccordion() {
         // Avoid multiple initialization
         if (this.accordionInitialized) return;
@@ -581,6 +622,24 @@ class ProjectManager {
         if (openBtn) {
             openBtn.onclick = () => {
                 window.open(`/projects/${projectName}/`, '_blank');
+                closeModal();
+            };
+        }
+        
+        // Bouton Créer Version
+        const createVersionBtn = document.getElementById('createVersionBtn');
+        if (createVersionBtn) {
+            createVersionBtn.onclick = () => {
+                this.createVersion(projectName);
+                closeModal();
+            };
+        }
+        
+        // Bouton Voir Versions
+        const viewVersionsBtn = document.getElementById('viewVersionsBtn');
+        if (viewVersionsBtn) {
+            viewVersionsBtn.onclick = () => {
+                window.location.href = `versions.php?project=${encodeURIComponent(projectName)}`;
                 closeModal();
             };
         }

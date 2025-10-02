@@ -1,5 +1,8 @@
 <?php
 // Enhanced Project Manager Actions
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 $root = realpath(__DIR__ . '/projects');
 $exclude = ['admin', '.', '..', '.git', 'Projects-Manager'];
 $action = $_POST['action'] ?? null;
@@ -217,6 +220,157 @@ if ($action === 'git_clone') {
         }
         
         header('Location: index.php?error=' . $errorType . '&msg=' . urlencode(substr($errorOutput, 0, 200)));
+        exit;
+    }
+}
+
+// Ajout du système de versioning et backup automatique
+if ($action === 'versioning') {
+    // Récupérer et valider le nom du projet
+    $project = preg_replace('/[^A-Za-z0-9_-]/', '', trim($_POST['project'] ?? ''));
+    if (!$project) {
+        header('Location: index.php?error=missing_project');
+        exit;
+    }
+    $projectPath = $root . DIRECTORY_SEPARATOR . $project;
+    if (!is_dir($projectPath)) {
+        header('Location: index.php?error=project_not_found');
+        exit;
+    }
+    
+    // Définir le répertoire de sauvegarde pour ce projet
+    $backupsDir = __DIR__ . '/backups/' . $project;
+    if (!is_dir($backupsDir)) {
+        mkdir($backupsDir, 0755, true);
+    }
+    
+    // Générer un nom d'archive basé sur le timestamp
+    $timestamp = date('Ymd_His');
+    $archiveFile = $backupsDir . '/' . $project . '_' . $timestamp . '.zip';
+    
+    // Créer l'archive ZIP du projet
+    $zip = new ZipArchive();
+    if ($zip->open($archiveFile, ZipArchive::CREATE) !== true) {
+        header('Location: index.php?error=backup_failed');
+        exit;
+    }
+    
+    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($projectPath));
+    foreach ($iterator as $file) {
+        if (!$file->isFile()) continue;
+        $filePath = $file->getRealPath();
+        // Conserver la structure relative par rapport au projet
+        $localPath = substr($filePath, strlen($projectPath) + 1);
+        $zip->addFile($filePath, $localPath);
+    }
+    $zip->close();
+    
+    // Calculer le checksum SHA256 de l'archive et sauvegarder dans un fichier .sha256
+    $sha256 = hash_file('sha256', $archiveFile);
+    file_put_contents($archiveFile . '.sha256', $sha256);
+    
+    // Enregistrer les métadonnées du backup dans un fichier versioning.json
+    $metadataFile = $backupsDir . '/versioning.json';
+    if (file_exists($metadataFile)) {
+        $metadata = json_decode(file_get_contents($metadataFile), true);
+        if (!is_array($metadata)) {
+            $metadata = [];
+        }
+    } else {
+        $metadata = [];
+    }
+    $record = [
+        'timestamp' => $timestamp,
+        'archive' => basename($archiveFile),
+        'sha256' => $sha256,
+        'size' => filesize($archiveFile)
+    ];
+    $metadata[] = $record;
+    file_put_contents($metadataFile, json_encode($metadata, JSON_PRETTY_PRINT));
+    
+    // Politique de rétention: conserver uniquement les 7 derniers backups
+    $backups = glob($backupsDir . '/*.zip');
+    if (count($backups) > 7) {
+        usort($backups, function($a, $b) { return filemtime($b) - filemtime($a); });
+        foreach (array_slice($backups, 3) as $oldBackup) {
+            @unlink($oldBackup);
+            @unlink($oldBackup . '.sha256');
+        }
+    }
+    
+    header('Location: index.php?success=versioned&project=' . urlencode($project) . '&archive=' . urlencode(basename($archiveFile)));
+    exit;
+}
+
+if ($action === 'restore_version') {
+    $project = preg_replace('/[^A-Za-z0-9_-]/', '', trim($_POST['project'] ?? ''));
+    $archive = preg_replace('/[^A-Za-z0-9_.-]/', '', trim($_POST['archive'] ?? ''));
+    
+    if (!$project || !$archive) {
+        header('Location: index.php?error=missing_fields');
+        exit;
+    }
+    
+    $projectPath = $root . DIRECTORY_SEPARATOR . $project;
+    $backupsDir = __DIR__ . '/backups/' . $project;
+    $archiveFile = $backupsDir . '/' . $archive;
+    
+    // Vérifier que l'archive existe
+    if (!file_exists($archiveFile) || !file_exists($archiveFile . '.sha256')) {
+        header('Location: index.php?error=archive_not_found');
+        exit;
+    }
+    
+    // Vérifier l'intégrité de l'archive
+    $expectedSha = trim(file_get_contents($archiveFile . '.sha256'));
+    $actualSha = hash_file('sha256', $archiveFile);
+    if ($expectedSha !== $actualSha) {
+        header('Location: index.php?error=corrupted_archive');
+        exit;
+    }
+    
+    // Créer un backup du projet actuel avant restauration
+    if (is_dir($projectPath)) {
+        $tempBackupDir = __DIR__ . '/backups/' . $project;
+        if (!is_dir($tempBackupDir)) {
+            mkdir($tempBackupDir, 0755, true);
+        }
+        $tempBackup = $tempBackupDir . '/before_restore_' . date('Ymd_His') . '.zip';
+        
+        $zip = new ZipArchive();
+        if ($zip->open($tempBackup, ZipArchive::CREATE) === true) {
+            $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($projectPath));
+            foreach ($iterator as $file) {
+                if (!$file->isFile()) continue;
+                $filePath = $file->getRealPath();
+                $localPath = substr($filePath, strlen($projectPath) + 1);
+                $zip->addFile($filePath, $localPath);
+            }
+            $zip->close();
+            $sha256 = hash_file('sha256', $tempBackup);
+            file_put_contents($tempBackup . '.sha256', $sha256);
+        }
+        
+        // Supprimer le contenu actuel du projet
+        rrmdir($projectPath);
+    }
+    
+    // Créer le dossier du projet
+    if (!mkdir($projectPath, 0755, true)) {
+        header('Location: index.php?error=mkdir_failed');
+        exit;
+    }
+    
+    // Extraire l'archive
+    $zip = new ZipArchive();
+    if ($zip->open($archiveFile) === true) {
+        $zip->extractTo($projectPath);
+        $zip->close();
+        
+        header('Location: index.php?success=restored&project=' . urlencode($project) . '&archive=' . urlencode($archive));
+        exit;
+    } else {
+        header('Location: index.php?error=extraction_failed');
         exit;
     }
 }
