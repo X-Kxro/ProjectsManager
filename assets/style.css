@@ -1,6 +1,3 @@
-/* Project Manager - Unique Design System */
-
-/* Reset and base styles */
 * {
     box-sizing: border-box;
 }
@@ -16,19 +13,14 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Design System - Professional & Unique */
 :root {
-    /* Primary palette - Deep ocean blues with warm accents */
     --color-primary: #1a365d;
     --color-primary-light: #2d5a87;
     --color-primary-dark: #0f1f2e;
     
-    /* Secondary palette - Warm copper accents */
     --color-accent: #d69e2e;
     --color-accent-light: #f6e05e;
     --color-accent-dark: #b7791f;
-    
-    /* Neutral palette - Sophisticated grays */
     --color-gray-50: #f8fafc;
     --color-gray-100: #f1f5f9;
     --color-gray-200: #e2e8f0;

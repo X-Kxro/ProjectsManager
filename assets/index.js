@@ -1,11 +1,3 @@
-// Enhanced Project Manager - Professional JavaScript Application
-// Author: Project Manager Team
-// Version: 2.0.0
-
-/**
- * Main Project Manager Class
- * Handles project listing, modal interactions, search, and UI state management
- */
 class ProjectManager {
     constructor() {
         this.currentView = 'grid';
@@ -16,14 +8,10 @@ class ProjectManager {
         this.init();
     }
 
-    /**
-     * Initialize the application
-     * Sets up event bindings, loads data, and configures UI components
-     */
     init() {
-    this.bindEvents();
-    this.loadTheme();
-    this.loadProjects();
+        this.bindEvents();
+        this.loadTheme();
+        this.loadProjects();
         this.setupKeyboardShortcuts();
         this.setupNotifications();
         this.startAutoRefresh();
@@ -32,7 +20,6 @@ class ProjectManager {
     }
 
     bindEvents() {
-        // Search functionality
         const searchInput = document.getElementById('searchInput');
         const typeFilter = document.getElementById('typeFilter');
         const sortBy = document.getElementById('sortBy');
@@ -69,19 +56,14 @@ class ProjectManager {
             themeToggle.addEventListener('click', () => this.toggleTheme());
         }
 
-        // Form submission
         const createForm = document.getElementById('createForm');
         if (createForm) {
             createForm.addEventListener('submit', (e) => this.handleFormSubmit(e));
         }
 
-        // Delete buttons
         this.bindDeleteButtons();
-
-        // Project cards hover effects
         this.setupCardAnimations();
 
-        // Settings buttons
         document.querySelectorAll('.settingsBtn').forEach(btn => {
             btn.addEventListener('click', (e) => this.openSettings(e));
         });
@@ -220,17 +202,17 @@ class ProjectManager {
         const toggleIcon = document.querySelector('#viewToggle i');
         const toggleText = document.querySelector('#viewToggle');
 
-        if (this.currentView === 'grid') {
+            if (this.currentView === 'grid') {
             gridView.classList.add('hidden');
             listView.classList.remove('hidden');
             toggleIcon.className = 'fas fa-list';
-            toggleText.innerHTML = '<i class="fas fa-list"></i> List View';
+                toggleText.innerHTML = '<i class="fas fa-list"></i> Vue liste';
             this.currentView = 'list';
         } else {
             gridView.classList.remove('hidden');
             listView.classList.add('hidden');
             toggleIcon.className = 'fas fa-th-large';
-            toggleText.innerHTML = '<i class="fas fa-th-large"></i> Grid View';
+                toggleText.innerHTML = '<i class="fas fa-th-large"></i> Vue grille';
             this.currentView = 'grid';
         }
 
@@ -415,11 +397,9 @@ class ProjectManager {
         const container = document.getElementById('notifications');
         const notification = document.createElement('div');
 
-        // Set up notification element with base class and ARIA role
         notification.className = `notification notification-${type}`;
         notification.setAttribute('role', 'alert');
 
-        // Icon mapping for different notification types
         const icons = {
             success: 'fas fa-check-circle',
             error: 'fas fa-exclamation-circle',
@@ -430,27 +410,23 @@ class ProjectManager {
         notification.innerHTML = `
             <i class="${icons[type]}"></i>
             <span>${message}</span>
-            <button class="notification-close" aria-label="Close notification">
+                <button class="notification-close" aria-label="Fermer la notification">
                 <i class="fas fa-times"></i>
             </button>
         `;
 
-        // Append to container
         container.appendChild(notification);
 
-        // Animate in by adding show class
         setTimeout(() => {
             notification.classList.add('notification-show');
         }, 100);
 
-        // Close button handler
         const closeBtn = notification.querySelector('.notification-close');
         closeBtn.addEventListener('click', () => {
             notification.classList.remove('notification-show');
             setTimeout(() => notification.remove(), 300);
         });
 
-        // Auto remove after duration
         setTimeout(() => {
             if (notification.parentElement) {
                 notification.classList.remove('notification-show');
@@ -460,7 +436,6 @@ class ProjectManager {
     }
 
     showCustomConfirm(title, message, onConfirm) {
-        // Simple confirm for now - could be enhanced with custom modal
         if (confirm(`${title}\n\n${message}`)) {
             onConfirm();
         }
@@ -472,25 +447,21 @@ class ProjectManager {
         const name = btn.dataset.name;
         const modal = document.getElementById('settingsModal');
         
-        // Remplir les informations du projet
         this.populateProjectInfo(name, btn);
         
-        // Configurer les formulaires
         const original = document.getElementById('originalName');
         const newName = document.getElementById('newName');
         
         if (original) original.value = name;
         if (newName) newName.value = name;
 
-        // Afficher le modal centré
-         modal.style.display = 'flex'; document.body.classList.add('modal-open');
+        modal.style.display = 'flex'; 
+        document.body.classList.add('modal-open');
         
-        // Gestionnaires d'événements du modal
         this.setupModalHandlers(name);
     }
 
     populateProjectInfo(name, btn) {
-        // Trouver la carte du projet pour récupérer les infos
         const projectCard = btn.closest('.project-card');
         if (!projectCard) return;
 
@@ -504,7 +475,6 @@ class ProjectManager {
     }
 
     createVersion(projectName) {
-        // Afficher un état de chargement
         const statusDiv = document.getElementById('versionStatus');
         const statusText = document.getElementById('versionStatusText');
         
@@ -513,7 +483,6 @@ class ProjectManager {
             statusText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création de la version en cours...';
         }
         
-        // Créer et soumettre le formulaire
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = 'actions.php';
@@ -526,16 +495,13 @@ class ProjectManager {
     }
 
     initAccordion() {
-        // Avoid multiple initialization
         if (this.accordionInitialized) return;
         this.accordionInitialized = true;
 
-        // Wait for DOM to be ready
         setTimeout(() => {
             const toggles = document.querySelectorAll('.accordion-toggle');
             
             toggles.forEach((toggle) => {
-                // Add the new listener
                 toggle.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -547,7 +513,6 @@ class ProjectManager {
                     if (!content) return;
                     
                     if (content.classList.contains('hidden')) {
-                        // Close all other accordions
                         document.querySelectorAll('.accordion-content').forEach(c => {
                             if (c !== content) {
                                 c.classList.add('hidden');
@@ -557,11 +522,9 @@ class ProjectManager {
                             }
                         });
                         
-                        // Open selected accordion
                         content.classList.remove('hidden');
                         if (chevron) chevron.style.transform = 'rotate(180deg)';
                     } else {
-                        // Close accordion
                         content.classList.add('hidden');
                         if (chevron) chevron.style.transform = 'rotate(0deg)';
                     }
@@ -573,31 +536,26 @@ class ProjectManager {
     setupModalHandlers(projectName) {
         const modal = document.getElementById('settingsModal');
         
-        // Fonction pour fermer le modal
         const closeModal = () => {
             modal.style.display = 'none';
             document.body.classList.remove('modal-open');
         };
         
-        // Bouton fermer X en haut
         const cancelBtn = document.getElementById('modalCancel');
         if (cancelBtn) {
             cancelBtn.onclick = closeModal;
         }
         
-        // Bouton fermer en bas
         const closeBtn = document.getElementById('modalClose');
         if (closeBtn) {
             closeBtn.onclick = closeModal;
         }
         
-        // Clic sur le backdrop
         const backdrop = document.getElementById('modalBackdrop');
         if (backdrop) {
             backdrop.onclick = closeModal;
         }
         
-        // Bouton Supprimer
         const deleteBtn = document.getElementById('deleteProjectBtn');
         if (deleteBtn) {
             deleteBtn.onclick = () => {
@@ -617,7 +575,6 @@ class ProjectManager {
             };
         }
         
-        // Bouton Ouvrir
         const openBtn = document.getElementById('openProjectBtn');
         if (openBtn) {
             openBtn.onclick = () => {
@@ -626,7 +583,6 @@ class ProjectManager {
             };
         }
         
-        // Bouton Créer Version
         const createVersionBtn = document.getElementById('createVersionBtn');
         if (createVersionBtn) {
             createVersionBtn.onclick = () => {
@@ -635,7 +591,6 @@ class ProjectManager {
             };
         }
         
-        // Bouton Voir Versions
         const viewVersionsBtn = document.getElementById('viewVersionsBtn');
         if (viewVersionsBtn) {
             viewVersionsBtn.onclick = () => {
@@ -646,13 +601,9 @@ class ProjectManager {
     }
 
     startAutoRefresh() {
-        // Auto-refresh every 30 seconds
         setInterval(() => {
-            // Only refresh if no modals or forms are active
             if (!document.querySelector('input:focus') && !document.querySelector('select:focus')) {
                 const currentCount = this.projects.length;
-                // In a real app, we'd check for changes via AJAX
-                // For now, just update the timestamp
                 const timeElement = document.querySelector('.fa-clock').parentElement;
                 if (timeElement) {
                     timeElement.innerHTML = `<i class="fas fa-clock"></i> ${new Date().toLocaleTimeString()}`;
@@ -662,7 +613,6 @@ class ProjectManager {
     }
 
     addLoadingStates() {
-        // Add subtle loading animations to enhance UX
         document.querySelectorAll('.btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 if (!btn.disabled && btn.type === 'submit') {
@@ -686,7 +636,6 @@ class ProjectManager {
     }
 }
 
-// Initialize the application when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     new ProjectManager();
 });

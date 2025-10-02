@@ -1,20 +1,11 @@
 <?php
-/**
- * Script de backup automatique pour Project Manager
- * À exécuter via cron/tâche planifiée
- * 
- * Usage: php backup_auto.php [project_name]
- * Si aucun projet spécifié, backup tous les projets
- */
 
-// Configuration
 $BACKUP_ROOT = __DIR__;
 $PROJECTS_ROOT = realpath(__DIR__ . '/projects');
 $EXCLUDE_DIRS = ['admin', '.', '..', '.git', 'Projects-Manager'];
-$MAX_BACKUPS_PER_PROJECT = 7; // Nombre maximum de backups à conserver
+$MAX_BACKUPS_PER_PROJECT = 7;
 $LOG_FILE = __DIR__ . '/backup_auto.log';
 
-// Fonctions utilitaires
 function writeLog($message) {
     global $LOG_FILE;
     $timestamp = date('Y-m-d H:i:s');

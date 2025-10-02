@@ -1,5 +1,4 @@
 <?php
-// Enhanced Project Manager
 $root = realpath(__DIR__ . '/projects');
 $exclude = ['admin', '.', '..', '.git', 'Projects-Manager'];
 $items = scandir($root);
@@ -7,9 +6,9 @@ $projects = [];
 $totalSize = 0;
 $totalFiles = 0;
 $projectsByType = ['php' => 0, 'nodejs' => 0, 'html' => 0, 'react' => 0, 'vue' => 0, 'general' => 0];
-$recentProjects = 0; // Projets créés dans les 7 derniers jours
-$gitProjects = 0; // Projets avec Git initialisé
-$todayProjects = 0; // Projets créés aujourd'hui
+$recentProjects = 0;
+$gitProjects = 0;
+$todayProjects = 0;
 
 foreach ($items as $name) {
     if (in_array($name, $exclude, true)) continue;
@@ -19,7 +18,6 @@ foreach ($items as $name) {
         $size = 0;
         $fileCount = 0;
 
-        // Calculer la taille et le nombre de fichiers
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS),
             RecursiveIteratorIterator::CHILD_FIRST
@@ -35,7 +33,6 @@ foreach ($items as $name) {
         $totalSize += $size;
         $totalFiles += $fileCount;
 
-        // Détecter le type de projet de manière plus précise
         $type = 'general';
         $isGitProject = false;
 
@@ -128,7 +125,7 @@ function getProjectIcon($type)
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Project Manager Pro</title>
+    <title>Projects Manager Pro</title>
     
     <!-- Custom Design System -->
     <link rel="stylesheet" href="assets/style.css">
@@ -148,8 +145,8 @@ function getProjectIcon($type)
                         PM
                     </div>
                     <div>
-                        <h1 class="heading-3" style="margin: 0; color: var(--color-primary);">Project Manager</h1>
-                        <p class="text-muted" style="margin: 0; font-size: 0.75rem;">Professional Development Hub</p>
+                        <h1 class="heading-3" style="margin: 0; color: var(--color-primary);">Gestionnaire de projets</h1>
+                        <p class="text-muted" style="margin: 0; font-size: 0.75rem;">Espace professionnel pour développeurs</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-md">
@@ -168,14 +165,13 @@ function getProjectIcon($type)
             </div>
         </div>
     </nav>
-
     <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
         <!-- Statistics Dashboard -->
         <section class="stats-grid animate-fade-in-up">
             <div class="stat-card stat-card--projects">
                 <div class="flex justify-between items-center mb-md">
                     <div>
-                        <h3 class="text-muted" style="margin: 0; font-size: 0.875rem; font-weight: 500;">Total Projects</h3>
+                        <h3 class="text-muted" style="margin: 0; font-size: 0.875rem; font-weight: 500;">Total des projets</h3>
                         <p style="margin: 0; font-size: 2rem; font-weight: 700; color: var(--color-primary);"><?= $totalProjects ?></p>
                     </div>
                     <div style="color: var(--color-primary); font-size: 2rem; opacity: 0.8;">
@@ -184,14 +180,14 @@ function getProjectIcon($type)
                 </div>
                 <p class="text-muted" style="margin: 0; font-size: 0.75rem;">
                     <i class="fas fa-arrow-up" style="color: var(--color-success);"></i>
-                    <?= $recentProjects ?> this week
+                    <?= $recentProjects ?> cette semaine
                 </p>
             </div>
 
             <div class="stat-card stat-card--size">
                 <div class="flex justify-between items-center mb-md">
                     <div>
-                        <h3 class="text-muted" style="margin: 0; font-size: 0.875rem; font-weight: 500;">Total Size</h3>
+                        <h3 class="text-muted" style="margin: 0; font-size: 0.875rem; font-weight: 500;">Taille totale</h3>
                         <p style="margin: 0; font-size: 2rem; font-weight: 700; color: var(--color-info);"><?= formatBytes($totalSize) ?></p>
                     </div>
                     <div style="color: var(--color-info); font-size: 2rem; opacity: 0.8;">
@@ -199,14 +195,14 @@ function getProjectIcon($type)
                     </div>
                 </div>
                 <p class="text-muted" style="margin: 0; font-size: 0.75rem;">
-                    <?= number_format($totalFiles) ?> files
+                    <?= number_format($totalFiles) ?> fichiers
                 </p>
             </div>
 
             <div class="stat-card stat-card--git">
                 <div class="flex justify-between items-center mb-md">
                     <div>
-                        <h3 class="text-muted" style="margin: 0; font-size: 0.875rem; font-weight: 500;">Git Projects</h3>
+                        <h3 class="text-muted" style="margin: 0; font-size: 0.875rem; font-weight: 500;">Projets Git</h3>
                         <p style="margin: 0; font-size: 2rem; font-weight: 700; color: var(--color-success);"><?= $gitProjects ?></p>
                     </div>
                     <div style="color: var(--color-success); font-size: 2rem; opacity: 0.8;">
@@ -214,14 +210,14 @@ function getProjectIcon($type)
                     </div>
                 </div>
                 <p class="text-muted" style="margin: 0; font-size: 0.75rem;">
-                    <?= $totalProjects > 0 ? round($gitProjects / $totalProjects * 100) : 0 ?>% of total
+                    <?= $totalProjects > 0 ? round($gitProjects / $totalProjects * 100) : 0 ?>% du total
                 </p>
             </div>
 
             <div class="stat-card stat-card--popular">
                 <div class="flex justify-between items-center mb-md">
                     <div>
-                        <h3 class="text-muted" style="margin: 0; font-size: 0.875rem; font-weight: 500;">Popular Type</h3>
+                        <h3 class="text-muted" style="margin: 0; font-size: 0.875rem; font-weight: 500;">Type le plus courant</h3>
                         <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--color-accent); display: flex; align-items: center; gap: 0.5rem;">
                             <?= getProjectIcon($mostUsedType) ?>
                             <?= ucfirst($mostUsedType) ?>
@@ -232,66 +228,66 @@ function getProjectIcon($type)
                     </div>
                 </div>
                 <p class="text-muted" style="margin: 0; font-size: 0.75rem;">
-                    <?= $projectsByType[$mostUsedType] ?> projects
+                    <?= $projectsByType[$mostUsedType] ?> projets
                 </p>
             </div>
         </section>
 
         <!-- Project Actions -->
         <section class="content-section animate-fade-in-up">
-            <div class="section-header">
-                <h2 class="heading-2" style="margin: 0;">Quick Actions</h2>
-                <p class="text-secondary" style="margin: 0;">Create new projects or manage existing ones</p>
+                <div class="section-header">
+                <h2 class="heading-2" style="margin: 0;">Actions rapides</h2>
+                <p class="text-secondary" style="margin: 0;">Créez de nouveaux projets ou gérez les existants</p>
             </div>
             <div class="section-content">
                 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
                     <!-- Create Project -->
                     <div>
-                        <h3 class="heading-3">Create New Project</h3>
+                        <h3 class="heading-3">Créer un nouveau projet</h3>
                         <form id="createForm" action="actions.php" method="post" style="display: grid; grid-template-columns: 1fr auto auto; gap: 1rem; align-items: end;">
                             <input type="hidden" name="action" value="create">
                             <div>
-                                <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Project Name</label>
-                                <input name="project" required pattern="[A-Za-z0-9_-]+" 
-                                       class="form-input" 
-                                       placeholder="my-awesome-project" />
+                    <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Nom du projet</label>
+                    <input name="project" required pattern="[A-Za-z0-9_-]+" 
+                        class="form-input" 
+                        placeholder="mon-projet-genial" />
                             </div>
                             <div>
-                                <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Template</label>
+                                <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Modèle</label>
                                 <select name="template" class="form-select">
-                                    <option value="">Basic Project</option>
-                                    <option value="php">PHP Project</option>
-                                    <option value="html">HTML/CSS/JS</option>
-                                    <option value="react">React App</option>
-                                    <option value="vue">Vue.js App</option>
+                                    <option value="">Projet basique</option>
+                                    <option value="php">Projet PHP</option>
+                                    <option value="html">Projet HTML/CSS/JS</option>
+                                    <option value="react">Application React</option>
+                                    <option value="vue">Application Vue.js</option>
                                 </select>
                             </div>
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-plus"></i>
-                                Create
+                                Créer
                             </button>
                         </form>
                         
                         <!-- GitHub Clone -->
                         <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--color-gray-200);">
-                            <h4 class="text-primary" style="margin: 0 0 1rem 0; font-size: 1.125rem; font-weight: 600;">Clone from GitHub</h4>
+                            <h4 class="text-primary" style="margin: 0 0 1rem 0; font-size: 1.125rem; font-weight: 600;">Cloner depuis GitHub</h4>
                             <form id="cloneFormMain" action="actions.php" method="post" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: end;">
                                 <input type="hidden" name="action" value="git_clone">
                                 <div>
-                                    <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Repository URL</label>
-                                    <input name="repo" required 
-                                           class="form-input" 
-                                           placeholder="https://github.com/user/repo.git" />
+                     <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">URL du dépôt</label>
+                     <input name="repo" required 
+                         class="form-input" 
+                         placeholder="https://github.com/utilisateur/repo.git" />
                                 </div>
                                 <div>
-                                    <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Local Name</label>
-                                    <input name="target" required pattern="[A-Za-z0-9_-]+" 
-                                           class="form-input" 
-                                           placeholder="local-project-name" />
+                     <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Nom local</label>
+                     <input name="target" required pattern="[A-Za-z0-9_-]+" 
+                         class="form-input" 
+                         placeholder="nom-projet-local" />
                                 </div>
                                 <button type="submit" class="btn btn-accent">
                                     <i class="fab fa-github"></i>
-                                    Clone
+                                    Cloner
                                 </button>
                             </form>
                         </div>
@@ -299,18 +295,18 @@ function getProjectIcon($type)
                     
                     <!-- Search & Filters -->
                     <div>
-                        <h3 class="heading-3">Search & Filter</h3>
+                        <h3 class="heading-3">Recherche & filtres</h3>
                         <div style="display: flex; flex-direction: column; gap: 1rem;">
                             <div>
-                                <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Search Projects</label>
-                                <input id="searchInput" 
-                                       class="form-input" 
-                                       placeholder="Search by name..." />
+                    <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Rechercher des projets</label>
+                    <input id="searchInput" 
+                        class="form-input" 
+                        placeholder="Rechercher par nom..." />
                             </div>
                             <div>
-                                <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Filter by Type</label>
+                                <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Filtrer par type</label>
                                 <select id="typeFilter" class="form-select">
-                                    <option value="">All Types</option>
+                                    <option value="">Tous les types</option>
                                     <option value="php">PHP</option>
                                     <option value="nodejs">Node.js</option>
                                     <option value="html">HTML</option>
@@ -320,11 +316,11 @@ function getProjectIcon($type)
                                 </select>
                             </div>
                             <div>
-                                <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Sort by</label>
+                                <label class="text-secondary" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Trier par</label>
                                 <select id="sortBy" class="form-select">
-                                    <option value="date">Date Modified</option>
-                                    <option value="name">Name</option>
-                                    <option value="size">Size</option>
+                                    <option value="date">Date modifiée</option>
+                                    <option value="name">Nom</option>
+                                    <option value="size">Taille</option>
                                 </select>
                             </div>
                         </div>
@@ -339,17 +335,17 @@ function getProjectIcon($type)
                 <div class="flex items-center">
                     <div>
                         <h2 class="heading-2" style="margin: 0;">Mes projets</h2>
-                        <p class="text-secondary" style="margin: 0;"><?= count($projects) ?> projects found</p>
+                        <p class="text-secondary" style="margin: 0;"><?= count($projects) ?> projets trouvés</p>
                     </div>
                     <div class="flex gap-sm justify-end" style="margin-left: auto;">
                         <button id="viewToggle" class="btn btn-secondary">
                             <i class="fas fa-th-large"></i>
-                            Grid View
+                            Vue grille
                         </button>
                         <a href="/phpmyadmin">
                             <button class="btn btn-secondary" id="listViewBtn">
                                 <i class="fas fa-database"></i>
-                                Database
+                                Base de données
                             </button>
                         </a>
                     </div>
@@ -360,12 +356,12 @@ function getProjectIcon($type)
                 <!-- Empty State -->
                 <div style="text-align: center; padding: 4rem 2rem;">
                     <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;">📁</div>
-                    <h3 class="heading-3">No Projects Yet</h3>
-                    <p class="text-secondary" style="margin-bottom: 2rem;">Create your first project to get started with development</p>
+                    <h3 class="heading-3">Aucun projet pour le moment</h3>
+                    <p class="text-secondary" style="margin-bottom: 2rem;">Créez votre premier projet pour commencer le développement</p>
                     <button onclick="document.querySelector('input[name=project]').focus()" 
                             class="btn btn-primary">
                         <i class="fas fa-plus"></i>
-                        Create Your First Project
+                        Créez votre premier projet
                     </button>
                 </div>
                 <?php else: ?>
@@ -383,18 +379,18 @@ function getProjectIcon($type)
                                 <div style="font-size: 1.5rem;"><?= getProjectIcon($p['type']) ?></div>
                                 <div>
                                     <h3 class="text-primary" style="margin: 0; font-size: 1.125rem; font-weight: 600;"><?= htmlspecialchars($p['name']) ?></h3>
-                                    <p class="text-muted" style="margin: 0; font-size: 0.875rem;"><?= ucfirst($p['type']) ?> Project</p>
+                                    <p class="text-muted" style="margin: 0; font-size: 0.875rem;"><?php echo ucfirst($p['type']) . ' Projet'; ?></p>
                                 </div>
                             </div>
                             <div class="flex gap-sm">
-                                <button class="text-muted" style="border: none; background: none; cursor: pointer; padding: 0.25rem;" 
-                                        title="Star project" aria-label="Star this project">
+                <button class="text-muted" style="border: none; background: none; cursor: pointer; padding: 0.25rem;" 
+                    title="Marquer le projet" aria-label="Marquer ce projet">
                                     <i class="far fa-star"></i>
                                 </button>
-                                <button class="settingsBtn text-muted" style="border: none; background: none; cursor: pointer; padding: 0.25rem;" 
-                                        data-name="<?= htmlspecialchars($p['name']) ?>" 
-                                        title="Project settings" 
-                                        aria-label="Open project settings">
+                <button class="settingsBtn text-muted" style="border: none; background: none; cursor: pointer; padding: 0.25rem;" 
+                    data-name="<?= htmlspecialchars($p['name']) ?>" 
+                    title="Paramètres du projet" 
+                    aria-label="Ouvrir les paramètres du projet">
                                     <i class="fas fa-cog"></i>
                                 </button>
                             </div>
@@ -402,15 +398,15 @@ function getProjectIcon($type)
                         
                         <div style="margin-bottom: 1.5rem;">
                             <div class="flex justify-between mb-sm">
-                                <span class="text-secondary" style="font-size: 0.875rem;">Files:</span>
+                                <span class="text-secondary" style="font-size: 0.875rem;">Fichiers :</span>
                                 <span class="text-primary" style="font-size: 0.875rem; font-weight: 500;"><?= $p['fileCount'] ?></span>
                             </div>
                             <div class="flex justify-between mb-sm">
-                                <span class="text-secondary" style="font-size: 0.875rem;">Size:</span>
+                                <span class="text-secondary" style="font-size: 0.875rem;">Taille :</span>
                                 <span class="text-primary" style="font-size: 0.875rem; font-weight: 500;"><?= formatBytes($p['size']) ?></span>
                             </div>
                             <div class="flex justify-between mb-sm">
-                                <span class="text-secondary" style="font-size: 0.875rem;">Modified:</span>
+                                <span class="text-secondary" style="font-size: 0.875rem;">Modifié :</span>
                                 <span class="text-primary" style="font-size: 0.875rem; font-weight: 500;"><?= date('M j, Y', $p['timestamp']) ?></span>
                             </div>
                             
@@ -427,12 +423,12 @@ function getProjectIcon($type)
                                target="_blank"
                                class="btn btn-primary" style="flex: 1; text-decoration: none; justify-content: center;">
                                 <i class="fas fa-external-link-alt"></i>
-                                Open
+                                Ouvrir
                             </a>
-                            <button class="btn btn-secondary delBtn" 
+                                    <button class="btn btn-secondary delBtn" 
                                     data-name="<?= htmlspecialchars($p['name']) ?>"
-                                    title="Delete project"
-                                    aria-label="Delete project <?= htmlspecialchars($p['name']) ?>">
+                                    title="Supprimer le projet"
+                                    aria-label="Supprimer le projet <?= htmlspecialchars($p['name']) ?>">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -454,7 +450,7 @@ function getProjectIcon($type)
                             <div style="font-size: 1.5rem;"><?= getProjectIcon($p['type']) ?></div>
                             <div style="flex: 1;">
                                 <h3 class="text-primary" style="margin: 0; font-size: 1.125rem; font-weight: 600;"><?= htmlspecialchars($p['name']) ?></h3>
-                                <p class="text-muted" style="margin: 0; font-size: 0.875rem;"><?= ucfirst($p['type']) ?> Project • <?= $p['fileCount'] ?> files • <?= formatBytes($p['size']) ?></p>
+                                <p class="text-muted" style="margin: 0; font-size: 0.875rem;"><?php echo ucfirst($p['type']) . ' Projet • ' . $p['fileCount'] . ' fichiers • ' . formatBytes($p['size']); ?></p>
                             </div>
                             <div class="text-secondary" style="font-size: 0.875rem; min-width: 120px; text-align: right;">
                                 <?= date('M j, Y', $p['timestamp']) ?>
@@ -466,18 +462,18 @@ function getProjectIcon($type)
                                target="_blank"
                                class="btn btn-primary btn-sm" style="text-decoration: none;">
                                 <i class="fas fa-external-link-alt"></i>
-                                Open
+                                    Ouvrir
                             </a>
-                            <button class="settingsBtn btn btn-secondary btn-sm" 
-                                    data-name="<?= htmlspecialchars($p['name']) ?>" 
-                                    title="Project settings" 
-                                    aria-label="Open project settings">
+                <button class="settingsBtn btn btn-secondary btn-sm" 
+                    data-name="<?= htmlspecialchars($p['name']) ?>" 
+                    title="Paramètres du projet" 
+                    aria-label="Ouvrir les paramètres du projet">
                                 <i class="fas fa-cog"></i>
                             </button>
-                            <button class="btn btn-secondary btn-sm delBtn" 
-                                    data-name="<?= htmlspecialchars($p['name']) ?>"
-                                    title="Delete project"
-                                    aria-label="Delete project <?= htmlspecialchars($p['name']) ?>">
+                <button class="btn btn-secondary btn-sm delBtn" 
+                    data-name="<?= htmlspecialchars($p['name']) ?>"
+                    title="Supprimer le projet"
+                    aria-label="Supprimer le projet <?= htmlspecialchars($p['name']) ?>">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -497,7 +493,7 @@ function getProjectIcon($type)
                 <div>
                     <h3 style="color: var(--color-primary); font-size: 1.25rem; font-weight: 600; margin: 0 0 var(--space-md) 0;">
                         <i class="fas fa-code" style="margin-right: 0.5rem;"></i>
-                        Project Manager
+                        Gestionnaire de projets
                     </h3>
                     <p style="color: var(--color-gray-600); margin: 0 0 var(--space-md) 0; line-height: 1.6;">
                         Gestionnaire de projets professionnel pour développeurs. 
@@ -573,7 +569,7 @@ function getProjectIcon($type)
             <!-- Barre de copyright -->
             <div style="border-top: 1px solid var(--color-gray-200); padding-top: var(--space-lg); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-md);">
                 <p style="color: var(--color-gray-500); margin: 0; font-size: 0.875rem;">
-                    © 2025 Project Manager. Tous droits réservés.
+                    © 2025 Gestionnaire de projets. Tous droits réservés.
                 </p>
                 <div style="display: flex; gap: var(--space-lg);">
                     <a href="#" style="color: var(--color-gray-500); text-decoration: none; font-size: 0.875rem; transition: color var(--transition-fast);" 

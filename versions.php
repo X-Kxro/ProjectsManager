@@ -1,5 +1,4 @@
 <?php
-// Page d'historique des versions
 $root = realpath(__DIR__ . '/projects');
 $project = preg_replace('/[^A-Za-z0-9_-]/', '', trim($_GET['project'] ?? ''));
 
@@ -53,7 +52,7 @@ function formatTimestamp($timestamp) {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Versions - <?= htmlspecialchars($project) ?> | Project Manager</title>
+    <title>Versions - <?= htmlspecialchars($project) ?> | Gestionnaire de projets</title>
     
     <!-- Custom Design System -->
     <link rel="stylesheet" href="assets/style.css">
