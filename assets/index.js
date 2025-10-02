@@ -329,9 +329,6 @@ class ProjectManager {
             this.showNotification(`Le projet "${params.get('project')}" a été renommé !`, 'success');
         } else if (params.get('success') === 'cloned') {
             this.showNotification(`Le projet "${params.get('project')}" a été cloné depuis GitHub !`, 'success');
-        } else if (params.get('success') === 'pushed') {
-            const repoName = params.get('repo');
-            this.showNotification(`Projet "${params.get('project')}" publié sur GitHub : ${repoName}`, 'success');
         } else if (params.get('error')) {
             const error = params.get('error');
             let message = 'Une erreur est survenue';
@@ -378,24 +375,10 @@ class ProjectManager {
                     }
                     break;
                 case 'missing_fields':
-                    message = 'Tous les champs sont requis pour publier sur GitHub';
+                    message = 'Tous les champs sont requis';
                     break;
                 case 'project_not_found':
                     message = 'Projet non trouvé';
-                    break;
-                case 'github_api_failed':
-                    message = 'Erreur API GitHub';
-                    const apiMsg = params.get('msg');
-                    if (apiMsg) {
-                        message += ': ' + decodeURIComponent(apiMsg);
-                    }
-                    break;
-                case 'git_push_failed':
-                    message = 'Erreur lors du push Git';
-                    const pushMsg = params.get('msg');
-                    if (pushMsg) {
-                        message += ': ' + decodeURIComponent(pushMsg);
-                    }
                     break;
             }
             
@@ -476,13 +459,9 @@ class ProjectManager {
         // Configurer les formulaires
         const original = document.getElementById('originalName');
         const newName = document.getElementById('newName');
-        const pushProjectName = document.getElementById('pushProjectName');
-        const repoName = document.getElementById('repoName');
         
         if (original) original.value = name;
         if (newName) newName.value = name;
-        if (pushProjectName) pushProjectName.value = name;
-        if (repoName) repoName.value = name;
 
         // Afficher le modal centré
          modal.style.display = 'flex'; document.body.classList.add('modal-open');
@@ -603,24 +582,6 @@ class ProjectManager {
             openBtn.onclick = () => {
                 window.open(`/projects/${projectName}/`, '_blank');
                 closeModal();
-            };
-        }
-        
-        // Gestion du formulaire de push GitHub
-        const pushForm = document.getElementById('pushForm');
-        if (pushForm) {
-            pushForm.onsubmit = (e) => {
-                const submitBtn = pushForm.querySelector('button[type="submit"]');
-                const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Publication...';
-                submitBtn.disabled = true;
-                
-                setTimeout(() => {
-                    if (submitBtn) {
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.disabled = false;
-                    }
-                }, 3000);
             };
         }
     }

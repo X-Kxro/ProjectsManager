@@ -635,61 +635,6 @@ function getProjectIcon($type)
                     </form>
                 </div>
 
-                <!-- GitHub Publish Section -->
-                <div style="margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-gray-200);">
-                    <h4 style="margin: 0 0 1rem 0; font-size: 1.125rem; font-weight: 600; color: var(--color-primary); display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fab fa-github" style="color: var(--color-primary);"></i>
-                        Publier sur GitHub
-                    </h4>
-                    <form id="pushForm" method="post" action="actions.php" style="display: flex; flex-direction: column; gap: 1rem;">
-                        <input type="hidden" name="action" value="git_push">
-                        <input type="hidden" name="project" id="pushProjectName">
-                        
-                        <div style="background: var(--color-gray-50); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--color-info);">
-                            <p style="margin: 0; font-size: 0.875rem; color: var(--color-gray-600);">
-                                <i class="fas fa-info-circle" style="color: var(--color-info);"></i>
-                                Cela va initialiser Git, créer un dépôt GitHub et pousser votre code.
-                            </p>
-                        </div>
-                        
-                        <div>
-                            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--color-gray-600); font-weight: 500;">GitHub Token</label>
-                            <input name="github_token" type="password" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: 1rem;" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-                            <p style="margin: 0.5rem 0 0 0; font-size: 0.75rem; color: var(--color-gray-500);">
-                                <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--color-primary);">Créer un token</a> avec les permissions "repo"
-                            </p>
-                        </div>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div>
-                                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--color-gray-600); font-weight: 500;">GitHub Username</label>
-                                <input name="github_username" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: 1rem;" placeholder="your-username">
-                            </div>
-                            <div>
-                                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--color-gray-600); font-weight: 500;">Repository Name</label>
-                                <input name="repo_name" id="repoName" required pattern="[A-Za-z0-9_.-]+" style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: 1rem;" placeholder="repository-name">
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--color-gray-600); font-weight: 500;">Description (optionnelle)</label>
-                            <textarea name="description" rows="2" style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: 1rem; resize: vertical; font-family: inherit;" placeholder="Description du projet"></textarea>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="checkbox" name="private" id="privateRepo" style="margin: 0;">
-                            <label for="privateRepo" style="font-size: 0.875rem; color: var(--color-gray-600);">Dépôt privé</label>
-                        </div>
-                        
-                        <button type="submit" 
-                                style="background: var(--color-accent); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 1rem;"
-                                onmouseover="this.style.background='var(--color-accent-dark)'; this.style.transform='translateY(-1px)'"
-                                onmouseout="this.style.background='var(--color-accent)'; this.style.transform='translateY(0)'">
-                            <i class="fab fa-github"></i>
-                            Publier
-                        </button>
-                    </form>
-                </div>
                 <!-- Project Info Section -->
                 <div>
                     <h4 style="margin: 0 0 1rem 0; font-size: 1.125rem; font-weight: 600; color: var(--color-primary); display: flex; align-items: center; gap: 0.5rem;">
